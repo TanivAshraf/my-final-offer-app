@@ -1,36 +1,62 @@
 import { createClient } from '@supabase/supabase-js'
+import OfferBrowser from './OfferBrowser' // We import our new interactive component
+
+// This special instruction tells Vercel to always get fresh data from the database.
 export const revalidate = 0
-export default async function Offers() {
+
+export default async function HomePage() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
   if (!supabaseUrl || !supabaseAnonKey) {
-    return <p>Supabase environment variables are not set.</p>
+    return (
+        <div style={{ fontFamily: 'sans-serif', textAlign: 'center', padding: '50px' }}>
+            <h1>Configuration Error</h1>
+            <p>Supabase environment variables are not set correctly in Vercel.</p>
+        </div>
+    )
   }
+
   const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  // Fetch all the data from our "offer" table, ordered by the newest first
   const { data: offers, error } = await supabase.from('offer').select('*').order('created_at', { ascending: false })
-  if (error) { return <p>Error fetching data: {error.message}</p> }
+
+  if (error) {
+    return <p style={{ fontFamily: 'sans-serif', color: 'red' }}>Error fetching data: {error.message}</p>
+  }
+  
+  // Calculate the "last synced" time from the newest offer in our database
+  const lastSynced = offers && offers.length > 0 ? new Date(offers[0].created_at).toLocaleString() : 'N/A'
+  
+  // Get a unique list of all the websites our agent has scraped
+  const sources = offers && offers.length > 0 ? Array.from(new Set(offers.map(o => o.source_url))) : []
+
   return (
     <div style={{ fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <h1 style={{ textAlign: 'center', color: '#333' }}>Credit Card Offers</h1>
-      <p style={{ textAlign: 'center', color: '#666' }}>Live data gathered by our AI Agent.</p>
-      {offers && offers.length > 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {offers.map((offer) => (
-            <div key={offer.id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px', backgroundColor: '#f9f9f9' }}>
-              <h2 style={{ marginTop: 0, color: '#111' }}>{offer.merchant_name || 'General Offer'}</h2>
-              <p style={{ color: '#555' }}><strong>Offer:</strong> {offer.offer_details}</p>
-              <p style={{ fontSize: '0.9em', color: '#777' }}>
-                <strong>Bank:</strong> {offer.bank_name || 'Not specified'} | <strong>Card:</strong> {offer.card_name || 'All Cards'}
-              </p>
-              <a href={offer.source_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8em', color: '#0070f3' }}>
-                View Source
-              </a>
-            </div>
+      <header style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <h1 style={{ color: '#333' }}>Credit Card Offers</h1>
+        <p style={{ color: '#666' }}>Live data gathered by the Offer Hunter AI Agent.</p>
+        <p style={{ fontSize: '0.8em', color: '#999' }}>Last Synced: {lastSynced}</p>
+      </header>
+      
+      <main>
+        {offers && offers.length > 0 ? (
+          // We pass the full list of offers to our new interactive component
+          <OfferBrowser offers={offers} />
+        ) : (
+          <p style={{ textAlign: 'center', color: '#888' }}>No offers found in the database yet. The agent might be on a mission!</p>
+        )}
+      </main>
+
+      <footer style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #eee', fontSize: '0.8em', color: '#aaa' }}>
+        <h3 style={{ color: '#666' }}>Data Sources</h3>
+        <ul>
+          {sources.map(source => (
+            <li key={source}><a href={source} target="_blank" rel="noopener noreferrer">{source}</a></li>
           ))}
-        </div>
-      ) : (
-        <p>No offers found in the database yet.</p>
-      )}
+        </ul>
+        <p>This is unverified data scraped from public sources. Use at your own risk.</p>
+      </footer>
     </div>
   )
 }
