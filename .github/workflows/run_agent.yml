@@ -28,7 +28,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install selenium webdriver-manager langchain-google-genai langchain-text-splitters supabase beautifulsoup4
+          # --- THE FIX IS ON THIS LINE ---
+          pip install selenium webdriver-manager langchain langchain-google-genai langchain-text-splitters supabase beautifulsoup4
 
       - name: Run the AI Agent
         env:
