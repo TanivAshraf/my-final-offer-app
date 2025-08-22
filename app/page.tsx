@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import OfferBrowser from './OfferBrowser' // We import our new interactive component
+import OfferBrowser from './OfferBrowser' // We import our interactive component
 
 // This special instruction tells Vercel to always get fresh data from the database.
 export const revalidate = 0
@@ -18,17 +18,13 @@ export default async function HomePage() {
   }
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey)
-  // Fetch all the data from our "offer" table, ordered by the newest first
   const { data: offers, error } = await supabase.from('offer').select('*').order('created_at', { ascending: false })
 
   if (error) {
     return <p style={{ fontFamily: 'sans-serif', color: 'red' }}>Error fetching data: {error.message}</p>
   }
   
-  // Calculate the "last synced" time from the newest offer in our database
   const lastSynced = offers && offers.length > 0 ? new Date(offers[0].created_at).toLocaleString() : 'N/A'
-  
-  // Get a unique list of all the websites our agent has scraped
   const sources = offers && offers.length > 0 ? Array.from(new Set(offers.map(o => o.source_url))) : []
 
   return (
@@ -36,12 +32,13 @@ export default async function HomePage() {
       <header style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h1 style={{ color: '#333' }}>Credit Card Offers</h1>
         <p style={{ color: '#666' }}>Live data gathered by the Offer Hunter AI Agent.</p>
-        <p style={{ fontSize: '0.8em', color: '#999' }}>Last Synced: {lastSynced}</p>
+        <p style={{ fontSize: '0.8em', color: '#999', margin: '0' }}>Last Synced: {lastSynced}</p>
+        {/* --- THIS IS THE NEW LINE WE ADDED --- */}
+        <p style={{ fontSize: '0.8em', color: '#999', marginTop: '4px' }}>Next Sync: Daily at 7:00 AM BDT</p>
       </header>
       
       <main>
         {offers && offers.length > 0 ? (
-          // We pass the full list of offers to our new interactive component
           <OfferBrowser offers={offers} />
         ) : (
           <p style={{ textAlign: 'center', color: '#888' }}>No offers found in the database yet. The agent might be on a mission!</p>
