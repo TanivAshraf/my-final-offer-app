@@ -1,56 +1,50 @@
 # =============================================================================
-# OFFER HUNTER AI AGENT - FINAL PRODUCTION SCRIPT
+# OFFER HUNTER AI AGENT - FINAL PRODUCTION SCRIPT (V3 - BULLETPROOF)
 # =============================================================================
 
-# --- Step 1: Import all necessary tools ---
 import time
 import json
-import os # A tool to get our secret keys from the environment
-
-# Selenium browser tools
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-
-# BeautifulSoup for cleaning HTML
 from bs4 import BeautifulSoup
-
-# LangChain AI tools
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-# Supabase database tool
 from supabase import create_client, Client
 
-# --- Step 2: Get our secret keys securely from the environment ---
-# GitHub Actions will provide these to our script
+# --- Getting our secret keys securely from the environment ---
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
 
-# --- Tool #1: The "Hunter" (Selenium version) ---
+# --- Tool #1: The "Hunter" (FINAL, BULLETPROOF SELENIUM VERSION) ---
 def scrape_url(url):
     print(f"--- Visiting with a real browser: {url} ---")
+    driver = None # Initialize driver to None
     try:
+        # --- THE FINAL FIX: We tell Selenium the EXACT location of Chrome ---
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        # This is the address of the browser inside the GitHub computer
+        chrome_options.binary_location = "/usr/bin/chromium-browser"
         
-        # This is the standard setup for Selenium in a GitHub Actions runner
+        # We no longer use a manager, we use the direct path.
         service = Service()
         
         driver = webdriver.Chrome(service=service, options=chrome_options)
         driver.get(url)
-        time.sleep(5)
+        time.sleep(7) # Wait a little longer for complex pages
         html_content = driver.page_source
         driver.quit()
         soup = BeautifulSoup(html_content, 'html.parser')
         return soup.get_text(separator='\n', strip=True)
     except Exception as e:
         print(f"!!! ERROR: The browser failed. Reason: {e} !!!")
-        if 'driver' in locals():
+        if driver:
             driver.quit()
         return None
 
@@ -65,11 +59,9 @@ def find_offers_in_text(text_data, api_key, source_url):
         prompt_text = """
         From the text below, extract all credit card offers into a JSON list.
         Each object in the list MUST have these keys: "bank_name", "card_name", "merchant_name", "offer_details".
-        If a value is not found, use the string "Not specified".
-        If there are absolutely no offers in the text, you MUST respond with an empty list: [].
-
-        TEXT TO ANALYZE:
-        {text}
+        If a value is not found, use "Not specified".
+        If there are absolutely no offers, respond with an empty list: [].
+        TEXT TO ANALYZE: {text}
         """
         prompt_template = ChatPromptTemplate.from_template(prompt_text)
         llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
@@ -90,8 +82,8 @@ def find_offers_in_text(text_data, api_key, source_url):
                     all_offers_found.extend(offers_in_chunk)
                     print(f"--- Found {len(offers_in_chunk)} potential offers in this chunk. ---")
                 else:
-                    print(f"!!! AI Analyst Warning: No valid JSON list found in this chunk. Skipping. !!!")
-                time.sleep(5) # Be polite to the API
+                    print(f"!!! AI Analyst Warning: No valid JSON list found in chunk. Skipping. !!!")
+                time.sleep(5)
             except Exception as e:
                 print(f"!!! ERROR analyzing chunk {i+1}. Reason: {e} !!!")
                 continue
@@ -115,20 +107,14 @@ def save_offers_to_db(supabase_client, offers_list):
 
 # --- Step 3: The Main Mission ---
 def run_mission():
-    print("--- INITIALIZING OFFER HUNTER AGENT ---")
-    
-    # Check if we have our secret keys
+    print("--- INITIALIZING OFFER HUNTER AGENT V3 ---")
     if not all([GEMINI_API_KEY, SUPABASE_URL, SUPABASE_KEY]):
         print("!!! CRITICAL ERROR: Missing one or more secret keys. Aborting mission. !!!")
         return
-
-    # Setting up the connection to our database
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
     print("--- Successfully connected to the Supabase database! ---")
-
-    # Our FULL list of production targets
     target_urls = [
-    "https://www.bracbank.com/en/retail/card/extra/dining",
+        "https://www.bracbank.com/en/retail/card/extra/dining",
     "https://www.bracbank.com/en/retail/card",
     "https://av.sc.com/bd/edm/b1g1-offers/",
     "https://www.sc.com/bd/promotions/",
@@ -154,8 +140,6 @@ def run_mission():
     "https://www.americanexpress.com/en-bd/network/credit-cards/city-bank/platinum-credit-card.html/",
     "https://www.americanexpress.com/en-bd/network/credit-cards/city-bank/platinum-reserve-credit-card/"
     ]
-
-    # The main loop
     for url in target_urls:
         raw_text = scrape_url(url)
         if raw_text:
@@ -165,19 +149,10 @@ def run_mission():
             print("*** Failed to get text. Moving on. ***")
         print("--------------------------------------------------\n")
         time.sleep(3)
-
     print("--- FULL AGENT MISSION COMPLETE ---")
 
 # --- This line makes the script start when it's run from the command line ---
 if __name__ == "__main__":
     run_mission()
-
-
-
-
-
-
-
-
 
 
