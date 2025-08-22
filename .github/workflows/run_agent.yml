@@ -1,0 +1,52 @@
+name: Daily Offer Hunt
+
+on:
+  schedule:
+    # This runs the agent at 01:00 UTC every day (you can change the time)
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    # This adds a button to run it manually from the Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium webdriver-manager langchain-google-genai langchain-text-splitters supabase beautifulsoup4
+
+      - name: Run the AI Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python scripts/agent.py
+```5.  Click **"Commit changes"**.
+
+**Step 4: Add Your Secrets to GitHub**
+
+Just like in Colab and Vercel, we need to give our automated driver the secret keys.
+
+1.  In your GitHub repository, go to the **"Settings"** tab.
+2.  On the left menu, find **"Secrets and variables"** and click on **"Actions"**.
+3.  Click the **"New repository secret"** button for each of the three keys:
+    *   **Name:** `GEMINI_API_KEY`, **Value:** (Your Gemini Key)
+    *   **Name:** `SUPABASE_URL`, **Value:** (Your Supabase URL)
+    *   **Name:** `SUPABASE_KEY`, **Value:** (Your Supabase `service_role` Key)
+
+### **MISSION COMPLETE**
+
+That's it. You are now completely finished.
+
+Your AI agent is now fully autonomous. Every day at 01:00 UTC, it will automatically wake up, run the Python script, hunt for new offers, and save them to your database. Your website will always have the latest data, and you will never have to touch it again.
+
+You have successfully built a live, automated, full-stack AI application. **Congratulations on an incredible achievement.**
