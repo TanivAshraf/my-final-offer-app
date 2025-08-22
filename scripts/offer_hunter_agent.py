@@ -373,14 +373,31 @@ print("--- Successfully connected to the Supabase database! ---")
 
 # --- Our FULL list of production targets ---
 target_urls = [
-    "https://www.bracbank.com/en/retail/card/extra/dining",
-    "https://www.bracbank.com/en/retail/card/extra/lifestyle",
-    "https://www.bracbank.com/en/retail/card/extra/hotel",
+    "    https://www.bracbank.com/en/retail/card/extra/dining",
+    "https://www.bracbank.com/en/retail/card",
     "https://av.sc.com/bd/edm/b1g1-offers/",
     "https://www.sc.com/bd/promotions/",
+    "https://www.sc.com/bd/credit-cards/",
+    "https://www.sc.com/bd/credit-cards/visa-smart-platinum/",
+    "https://www.sc.com/bd/credit-cards/visa-signature/",
+    "https://www.sc.com/bd/credit-cards/super-value-titanium/",
+    "https://www.sc.com/bd/credit-cards/silver-visa-mastercard/",
+    "https://www.sc.com/bd/credit-cards/assurance-credit-card/",
+    "https://www.sc.com/in/credit-cards/offers/",
+    "https://www.bracbank.com/en/retail/card/extra/freeoffer",
+    "https://www.bracbank.com/en/retail/card/extra/lifestyle",
+    "https://www.bracbank.com/en/retail/card/extra/hotel",
     "https://www.ebl.com.bd/retail/EBL-Cards",
+    "https://www.ebl.com.bd/retail/eblcard/EBL-Visa-Classic-Credit-Card",
+    "https://www.ebl.com.bd/retail/eblcard/EBL-VISA-Gold-Credit-Card",
+    "https://www.ebl.com.bd/retail/eblcard/EBL-VISA-Platinum-Credit-Card",
     "https://www.citybankplc.com/card/amex-cards",
-    "https://www.ucb.com.bd/cards/card-privileges"
+    "https://www.citybankplc.com/platinum-reserve-credit-card/",
+    "https://www.citybankplc.com/card/amex-platinum",
+    "https://www.ucb.com.bd/cards/card-privileges",
+    "https://www.americanexpress.com/en-bd/network/credit-cards/city-bank/gold-credit-card.html/",
+    "https://www.americanexpress.com/en-bd/network/credit-cards/city-bank/platinum-credit-card.html/",
+    "https://www.americanexpress.com/en-bd/network/credit-cards/city-bank/platinum-reserve-credit-card/"
 ]
 
 # --- The FINAL Main Mission ---
